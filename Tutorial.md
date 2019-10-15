@@ -151,7 +151,6 @@ Club <- setClass("Club",
                    players = list()
 
                  ))
-
 ```
 ### Creating Class-Specific Functions 
 
@@ -353,9 +352,31 @@ For a complete style guide, refer to this [webpage](https://rmarkdown.rstudio.co
 
 ## Rcpp
 
-R is infamous for slow compute times and poor memory management, the confluence of which may preclude any serious data-scientist from using vanilla R for analyses.  
+R is infamous for slow compute times and poor memory management, the confluence of which may preclude any serious data scientist from using vanilla R for analyses.  
+
+To circumvent this, you can leverage `Rcpp` which serves as an R wrapper for C++ code so that you can call actual C++ code from within R. You can get started with this from `usethis::use_rcpp()`. This will create a directory for your C++ code, `src/`, as well as add the requisite dependencies to your DESCRIPTION file.
+
+Also make sure that your NAMESPACE is correct - it should include these two lines:
+
+```R
+useDynLib(BaseballStats)
+importFrom(Rcpp, sourceCpp)
+```
+
+Read more about how to exactly use Rcpp from this great [blog post](http://adv-r.had.co.nz/Rcpp.html)
 
 ## Creating Better Package Documentation with `pkgdown`
 
+After creating a package you're ready to share with the world, you may want to create a website for hosting all documentation along the lines of `readthedocs`. One great way to do this is with [`pkgdown`](https://pkgdown.r-lib.org). After installing `pkgdown`, you can create your website as easily as with 
+
+```R
+pkgdown::build_site()
+```
+
+This will automatically generate a new folder, `docs/` which will store your .html files as well as give you a preview of your new package website!
+
 ## Shiny apps
 
+Shiny apps are powerful interactive web applications that are written in R. While you can develop a custom web-based application with your own html, css, and javascript code, Shiny provides a convenient approach that will compile your R code into the requisite web-based code. 
+
+While creating a Shiny app falls out of the purview of this tutorial, refer to a great [tutorial](http://zevross.com/blog/2016/04/19/r-powered-web-applications-with-shiny-a-tutorial-and-cheat-sheet-with-40-example-apps/) by Zev Ross to get started on your first Shiny app.
