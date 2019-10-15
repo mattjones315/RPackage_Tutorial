@@ -62,6 +62,17 @@ compute_average <- function(num_hits, num_at_bats) {
     return(num_hits / num_at_bats)
 }
 ```
+
+You can make sure that this function is working by loading the package with `devtools` and tesing out your function:
+
+```R
+require(devtools)
+load_all('.')
+
+compute_average(10, 50)
+
+```
+
 ### Creating Documentation
 
 Creating documentation in R with Roxygen is extremely easy. Roxygen will take your comments beginning with a `#'` character before every function and automatically generate documention. For example, using our function from before we can add the following documentation:
@@ -72,7 +83,8 @@ Creating documentation in R with Roxygen is extremely easy. Roxygen will take yo
 #' This function takes in the number of at-bats and number of hits and will return an average.
 #' @param num_hits Number of hits
 #' @param num_at_bats Number of at bats
-#' @exporrt
+#' @return The batting average.
+
 #' @examples
 #' compute_average(10, 50)
 compute_average <- function(num_hits, num_at_bats) {
@@ -85,24 +97,149 @@ compute_average <- function(num_hits, num_at_bats) {
 }
 ```
 
-Using the function `document` will populate the `man/` directory with your documentation. After running this function, you should notice two new `.Rd` files in your `man/` directory: `BaseballStats-package.Rd` and `compute_average.Rd`. 
+Using the function `devtools::document` will populate the `man/` directory with your documentation. After running this function, you should notice two new `.Rd` files in your `man/` directory: `BaseballStats-package.Rd` and `compute_average.Rd`. 
+
+After running the function `devtools::document`, you can see your new documentation with the call `?compute_average`.
 
 # Object Oriented Programming In R
 
+For more advanced packages, you may want to develop from an object oriented (OO) perspective. Such an approach could be nice for wrapping up data (e.g. a gene expression matrix) or the parameters around an analysis to replicate downstream (e.g. the filtered gene list, normalization method, etc.).
+
 R supports three different object oriented programming paradigms: S3, S4, and R5. Here we'll focus on S4 classes which are extremely flexible and similar to other object-oriented systems. 
 
+To begin, we'll creating a file for declaring all classes and what data can be stored in each instance. This will go in the `AllClasses.R` file. 
+
+### Defining S4 Classes
+
+We'll begin by creating two classes: `Player` and `Club`. 
+
+In `AllClasses.R` we'll add the following code: 
+
+```R
+
+Player <- setClass("Player",
+    slots = c(
+        name = "character",
+        num_at_bats = "numeric",
+        num_hits = "numeric",
+        is_pitcher = 'logical',
+        era = 'numeric'),
+    prototype = list(
+        name = character(),
+        num_at_bats = 0,
+        num_hits = 0,
+        is_pitcher = FALSE,
+        era = 0.0
+))
+
+Club <- setClass("Club",
+    slots = c(
+        name = 'character',
+        city = 'character',
+        winning_percentage = 'numeric',
+        players = 'list'),
+    prototype = list(
+        name = character(),
+        city = character(),
+        winning_percentage = 0.0,
+        players = list()
+
+))
+```
+### Creating Class-Specific Functions 
+
+To support classic object-oriented functionality, you might want to create class-specific functions, including a generator function akin to python's `__init__` function. 
+
+For readability, you can create an `.R`. file for each class you have - for instance `methods-Player.R`. We'll add the following code to `methods-Player.R`: 
+
+```R
+#' Initialize a new Player object.
+#'
+#' @param name Name of the player
+#' @param num_at_bats Number of at-bats the player has had
+#' @param num_hits Number of hits the player has had 
+#' @param is_pitcher Boolean indicating whether or not the player pitches
+#' @param era The Earned Run Average (ERA) for a pitcher 
+#' @return Player object
+Player <- function(name = "", num_at_bats = NULL, num_hits = NULL,
+        is_pitcher = FALSE, era = NULL) {
+
+    .Object <- new('Player', name = name, num_at_bats = num_at_bats,
+                    num_hits = num_hits, is_pitcher = is_pitcher, era = era)
+
+    return(.Object)
+}
+
+#' Compute a Player's batting average
+#'
+#' @param object A Player
+#' @return The player's batting average 
+setMethod("compute_batting_average", signature(object = "Player"),
+            function(object) {
+
+            return(compute_average(object@num_hits, object@num_at_bats))
+
+        }
+```
+
+As for the `Club` class we'll add to a file called `methods-Club.R`:
+
+```R
+Club <- function(name = "", city = "", winning_percentage = NULL,
+        players = list()) {
+
+    .Object <- new('Club', name = name, city = city,
+                    winning_percentage = winning_percentage, players = players)
+
+    return(.Object)
+}
+
+
+#' Compute the team's batting average
+#'
+#' @param object A Club
+#' @return The Club's batting average
+setMethod("compute_batting_average", signature(object = "Club"),
+            function(object) {
+            
+            num_hits = sum(sapply(object@players, function(x) x@num_hits))
+            num_at_bats = sum(sapply(object@players, function(x) x@num_at_bats))
+
+            return(compute_average(num_hits, num_at_bats))
+
+        }
+```
+
+You may notice that both objects have a function called `compute_batting_average`. This takes advantage of R's multiple dispatching feature, meaning that it will look for the object's "signature" before calling the function. In order to take advantage of this, we'll need to create one more file in `R/` that will store these **generics** that support multiple dispatch: `AllGenerics.R`. We'll add a single generic for now to `AllGenerics.R`:
+
+```R
+setGeneric("compute_batting_average", function(object, ...) {
+    standardGeneric("compute_batting_average")
+})
+
+```
+
+Now we can get this functionality:
+
+```R
+devtools::load_all()
+
+p1 = Player('Babe Ruth', num_hits = 1000, num_at_bats = 2000)
+p2 = Player('Joe Dimaggio', num_hits = 3000, num_at_bats = 5000)
+
+yankees = Club(name = 'yankees', city='New York', players = list(p1, p2))
+
+compute_batting_average(p1)
+> 0.5
+
+compute_batting_average(yankees)
+```
+
+# Publishing Your Code
 
 # Topics
-
-
-## Object Oriented Programming in R
-### Hybrid class types (using OR)
 
 ## Rcpp
 
 ## Shiny apps
-
-## CRAN, Bioconductor, and publishing your code
-
-## Devtools
 
