@@ -20,6 +20,7 @@ Before we get started, you'll want to make sure you have the following pieces of
    - This is just a nice development environment.
 3. The R package `devtools`, which can be done from within R: `install.packages('devtools')`. This is an extremely useful package for everything R-development.
 4. The R package `roxygen2` which you can install from github as so: `devtools::install_github('klutometis/roxygen')`. Roxygen will help you generate documentation. 
+5. The R package `usethis` which you can install as `install.packages("usethis")`
 
 # The Anatomy of an R Package
 
@@ -36,17 +37,21 @@ R packages range in complexity, but standard packages will have the following it
 
 ### Instantiating an R package
 
-There are a couple of ways to create R packages. Of course you can do things manually, but it is more straightforward to use `devtools`: 
+There are a couple of ways to create R packages. Of course you can do this manually, but we'll create a new package using Rstudio. 
 
-```R
-require(devtools)
-require(roxygen2)
-package.skeleton('BaseballStats')
-```
+Begin by creating a new projects from `File>New Project`: 
+<img src="images/create_project.png" alt="create_project" width="900">
 
-After doing this, you will now have a text files called DESCRIPTION and NAMESPACE and two folders: R/ and man/. Though it's not something you'll want to carry with you to publication, there is also a help doc called `Read-and-delete-me` which reminds you where to put specific files. 
+Then select the correct type of project you'd like to start.
+<img src="images/rpkg.png" alt="define rpkg" width="900">
 
-**Alternatives to `package.skeleton`**: You can also create R packages using `devtools::create` or by using R studio by following the steps under `File > New Project`. 
+Name the project and define where you'd like to put it.
+<img src="images/naming_package.png" alt="create_project" width="900">
+
+After doing this, you will now have a folder called `BaseballStats` in your working directory, with a folder for putting your code, `R`, a folder for putting any documentation, `man`, as well two files for storing important package metadata, DESCRIPTION and NAMESPACE.
+
+
+**Alternatives** You can also create R packages with  `devtools::create`, `devtools::pacakge.skeleton`, or with `usethis::create_pacakge`. 
 
 ### Add your functions or R scripts to R
 
@@ -70,7 +75,7 @@ require(devtools)
 load_all('.')
 
 compute_average(10, 50)
-
+[1] 0.2
 ```
 
 ### Creating Documentation
@@ -116,35 +121,37 @@ We'll begin by creating two classes: `Player` and `Club`.
 In `AllClasses.R` we'll add the following code: 
 
 ```R
+setClassUnion('numericORNULL', members=c('numeric', 'NULL'))
 
 Player <- setClass("Player",
-    slots = c(
-        name = "character",
-        num_at_bats = "numeric",
-        num_hits = "numeric",
-        is_pitcher = 'logical',
-        era = 'numeric'),
-    prototype = list(
-        name = character(),
-        num_at_bats = 0,
-        num_hits = 0,
-        is_pitcher = FALSE,
-        era = 0.0
-))
+                   slots = c(
+                     name = "character",
+                     num_at_bats = "numericORNULL",
+                     num_hits = "numericORNULL",
+                     is_pitcher = 'logical',
+                     era = 'numericORNULL'),
+                   prototype = list(
+                     name = character(),
+                     num_at_bats = 0,
+                     num_hits = 0,
+                     is_pitcher = FALSE,
+                     era = 0.0
+                   ))
 
 Club <- setClass("Club",
-    slots = c(
-        name = 'character',
-        city = 'character',
-        winning_percentage = 'numeric',
-        players = 'list'),
-    prototype = list(
-        name = character(),
-        city = character(),
-        winning_percentage = 0.0,
-        players = list()
+                 slots = c(
+                   name = 'character',
+                   city = 'character',
+                   winning_percentage = 'numericORNULL',
+                   players = 'list'),
+                 prototype = list(
+                   name = character(),
+                   city = character(),
+                   winning_percentage = 0.0,
+                   players = list()
 
-))
+                 ))
+
 ```
 ### Creating Class-Specific Functions 
 
@@ -179,7 +186,7 @@ setMethod("compute_batting_average", signature(object = "Player"),
 
             return(compute_average(object@num_hits, object@num_at_bats))
 
-        }
+        })
 ```
 
 As for the `Club` class we'll add to a file called `methods-Club.R`:
@@ -207,7 +214,7 @@ setMethod("compute_batting_average", signature(object = "Club"),
 
             return(compute_average(num_hits, num_at_bats))
 
-        }
+        })
 ```
 
 You may notice that both objects have a function called `compute_batting_average`. This takes advantage of R's multiple dispatching feature, meaning that it will look for the object's "signature" before calling the function. In order to take advantage of this, we'll need to create one more file in `R/` that will store these **generics** that support multiple dispatch: `AllGenerics.R`. We'll add a single generic for now to `AllGenerics.R`:
@@ -240,14 +247,14 @@ compute_batting_average(yankees)
 
 A great practice in creating your R packages is to add testing functionality. This will allows users to make sure that they've installed your package correctly, as well as help you notice any functionality you may have broken in an update to the package. 
 
-For this purpose, I recommend the `testthat` package. To get started with this, first create a new directory called `tests/`. For creating unittests, there's a great package called [`usethis`](https://github.com/r-lib/usethis). This has a ton of other great functionality for adding structure to your package, but for now we'll use it to introduce unit tests. 
+For this purpose, I recommend the `testthat` package. To get started, we'll first use the package `usethis` to create our testing environment. As a note, `usethis` has a ton of other great functionality for adding structure to your package, but for now we'll use it to introduce unit tests. 
 
 We'll add one example test, testing that the batting average of a player is computed correctly:
 
 ```R
 require(usethis)
 
-use_test("my-test")
+use_test("player")
 ✔ Setting active project to '/Users/student/Box Sync/RPackage_Tutorial/BaseballStats'
 ✔ Creating 'tests/testthat/'
 ✔ Writing 'tests/testthat.R'
@@ -325,7 +332,28 @@ Lastly, for specifically biology-related packages you can submit to Bioconductor
 
 # Extra Topics
 
+## Vignettes
+
+Vignettes are crucial parts of any R package, and primarily serve as an introduction to your package or as a tutorial for new features. To start your first vignette, I recommend using the `usethis::use_vignette`:
+
+```R
+require(usethis)
+use_vignette('BaseballStats-Intro', 'How to get started with BaseballStats')
+```
+
+If you're in Rstudio, this will automatically open up an Rmarkdown (`.Rmd`) file for you to edit. You'll notice that the key entries are already populated (e.g. the header and setup entries). 
+
+Rmarkdown writes very similarly to regular markdown, with the exception that it is compiled with `knitr` and is meant to have lots of embedded R code.
+
+When you're done with creating your vignette, you can see how it looks by clicking on the `knit` key at the top of your Rstudio screen. 
+
+<img src="images/knit_vignette.png" alt="knit-vignette" width="900">
+
+For a complete style guide, refer to this [webpage](https://rmarkdown.rstudio.com/lesson-1.html)
+
 ## Rcpp
+
+R is infamous for slow compute times and poor memory management, the confluence of which may preclude any serious data-scientist from using vanilla R for analyses.  
 
 ## Creating Better Package Documentation with `pkgdown`
 
