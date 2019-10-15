@@ -257,8 +257,16 @@ use_test("my-test")
 ● Modify 'tests/testthat/test-player-test.R'
 ```
 
-You'll now notice that a window pops up to edit the new test file that you've added. 
+You'll now notice that a window pops up to edit the new test file that you've added. You can add the following test:
 
+```R
+test_that("player batting average works", {
+  p1 = Player('joe', num_hits= 100, num_at_bats = 500)
+  expect_equal(compute_batting_average(p1), 0.2)
+})
+```
+
+You can make sure your tests work by using `devtools::test()`. 
 
 # Publishing Your Code
 
@@ -292,6 +300,10 @@ Suggests:
 
 For now, you can leave the NAMESPACE as is, exporting all functions. 
 
+Also to note is that you can provide a license (e.g. MIT) by using the `usethis` package -- for example `usethis::use_mit_license("Matt Jones")`. This will add to your DESCRIPTOIN file as well as create a new LICENSE file for your pacakge.
+
+To make sure that everything works correctly, you can run `R CMD check .` via command line from within your package directory. 
+
 ### Publishing on Github
 
 The easiest way to publish your R package is on github. This can be done simply by creating a repository for your code (e.g. https://github.com/mattjones315/BaseballStats). Users then can install your package with devtools using `devtools::install_github('mattjones315/BaseballStats`), for example. 
@@ -302,15 +314,16 @@ This can be really nice for making your code available while it's under developm
 
 CRAN is the default package server for R, and requires a bit more information before publishing. Firstly, you'll want to update your README.md and create a new file called NEWS.md in the package home directory that details any new updates for each version bump. You can look at the NEWS.md of [one of our recent packages](https://github.com/YosefLab/VISION/blob/master/NEWS.md). 
 
-You'll next want to use the command line function `R CMD check` to run, document, and test your code base. 
+You'll next want to use the command line function `R CMD check .` to run, document, and test your code base. 
 
-Now, to submit your package to CRAN you'll first want to build the package using `devtools::build()` (which will create a package bundle) and then manually upload this to http://cran.r-project.org/submit.html. These submission are vetted by volunteers and Hadley Wickam has some great advice around the entire submssion process, namely with how to make these gatekeepers look favorably on your package: http://r-pkgs.had.co.nz/release.html.
+Now, to submit your package to CRAN you need to build the package using `devtools::build()` (which will create a package bundle) and then manually upload this to http://cran.r-project.org/submit.html. These submission are vetted by volunteers and Hadley Wickam has some great advice around the entire submssion process, namely with how to make these gatekeepers look favorably on your package: http://r-pkgs.had.co.nz/release.html.
 
 ### Publishing with Bioconductor 
 
+Lastly, for specifically biology-related packages you can submit to Bioconductor to be hosted on their specific servers. This process tends to be a bit more rigorous but looks similar to a CRAN submssion. The full process can be found [here](https://www.bioconductor.org/developers/package-submission/).
 
 
-# Topics
+# Extra Topics
 
 ## Rcpp
 
