@@ -315,7 +315,6 @@ Maintainer: Matt Jones <matts_email@email.com>
 Description: BaseballStats provides an interface for storing player & ball club information as well as computing statistics around these items.
 License: MIT
 RoxygenNote: 6.1.1
-Suggests:
 Suggests: 
     testthat (>= 2.1.0)
     ggplot2
