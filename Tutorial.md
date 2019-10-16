@@ -43,14 +43,17 @@ Optionally, you can include these items:
 
 There are a couple of ways to begin an R package. Of course you can do this manually, but we'll create a new package using Rstudio. 
 
-Begin by creating a new projects from `File>New Project`: 
-<img src="images/create_project.png" alt="create_project" width="900">
+**1. Begin by creating a new projects from `File>New Project`:** 
 
-Then select the correct type of project you'd like to start.
-<img src="images/rpkg.png" alt="define rpkg" width="900">
+<img src="images/create_project.png" alt="create_project" width="600">
 
-Name the project and define where you'd like to put it.
-<img src="images/naming_package.png" alt="create_project" width="900">
+**2. Then select the correct type of project you'd like to start.**
+
+<img src="images/rpkg.png" alt="define rpkg" width="600">
+
+**3. Name the project and define where you'd like to put it.**
+
+<img src="images/naming_package.png" alt="create_project" width="600">
 
 After doing this, you will now have a folder called `BaseballStats` in your working directory, with a folder for putting your code, `R`, a folder for putting any documentation, `man`, as well two files for storing important package metadata, DESCRIPTION and NAMESPACE.
 
