@@ -271,13 +271,14 @@ We'll add one example test, testing that the batting average of a player is comp
 require(usethis)
 
 use_test("player")
-✔ Setting active project to '/Users/student/Box Sync/RPackage_Tutorial/BaseballStats'
+✔ Setting active project to '/Users/student/BaseballStats'
+✔ Adding 'testthat' to Suggests field in DESCRIPTION
 ✔ Creating 'tests/testthat/'
 ✔ Writing 'tests/testthat.R'
 ● Call `use_test()` to initialize a basic test file and open it for editing.
 ✔ Increasing 'testthat' version to '>= 2.1.0' in DESCRIPTION
-✔ Writing 'tests/testthat/player-test.R'
-● Modify 'tests/testthat/player-test.R'
+✔ Writing 'tests/testthat/test-player.R'
+● Modify 'tests/testthat/test-player.R'
 ```
 
 You'll now notice that a window pops up to edit the new test file that you've added. You can add the following test:
