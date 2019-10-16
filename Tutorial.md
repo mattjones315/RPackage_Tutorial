@@ -201,16 +201,20 @@ As for the `Club` class we'll add to a file called `methods-Club.R`:
 
 ```R
 Club <- function(name = "", city = "", winning_percentage = NULL,
-        players = list(), num_wins = 0, num_games = 0) {
+                 players = list(), num_wins = 0, num_games = 0) {
 
-    if (winning_percentage == NULL) {
+  if (is.null(winning_percentage)) {
+    if (num_games < 1) {
+      winning_percentage = 0
+    } else {
       winning_percentage = num_wins / num_games
     }
+  }
 
-    .Object <- new('Club', name = name, city = city,
-                    winning_percentage = winning_percentage, players = players)
+  .Object <- new('Club', name = name, city = city,
+                 winning_percentage = winning_percentage, players = players)
 
-    return(.Object)
+  return(.Object)
 }
 
 
