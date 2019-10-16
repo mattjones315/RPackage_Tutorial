@@ -8,7 +8,7 @@ While most users use R with one-off scripts, there are several reasons for creat
 
 1. It is easier to dissemminate your code (for example, if you were publishing your code along with your paper - e.g. https://github.com/chris-mcginnis-ucsf/MULTI-seq).
 2. It may be easier for a user to collate standard analyses into functions in a common interface. (e.g. https://github.com/YosefLab/VISION)
-3. It is easier to version-control a pakcage than individual scripts. 
+3. It is easier to version-control a package than individual scripts. 
 
 ### Preliminaries
 
@@ -21,23 +21,27 @@ Before we get started, you'll want to make sure you have the following pieces of
 3. The R package `devtools`, which can be done from within R: `install.packages('devtools')`. This is an extremely useful package for everything R-development.
 4. The R package `roxygen2` which you can install from github as so: `devtools::install_github('klutometis/roxygen')`. Roxygen will help you generate documentation. 
 5. The R package `usethis` which you can install as `install.packages("usethis")`
+6. The R package `testthis` which you can install as `install.packages("testthis")`
 
 # The Anatomy of an R Package
 
-R packages range in complexity, but standard packages will have the following items:
+R packages range in complexity, but you need to hav the following items:
 
-1. DESCRIPTION (**required**): this stores package metadata, including its name, version, authors, license, and required or suggested packages.
-2. NAMESPACE (**required**): a text file storing information pertaining to which functions you'd like to import from external packages, or export from your own package for users.
-3. R/ (**required**): a folder that will store *all* source code for your package.
-4. man/ (**required**)*: a folder storing all code documentation (refer to the section below entitled "Creating Documentation")
-5. LICENSE (*optional*): a text file storing your license information. 
-6. vignettes/ (*optional*): a folder storing R vignettes (i.e. tutorials). These are kind of like static jupyter notebooks that users can follow.
-7. data/ (*optional*): a folder that stores any **required** package data. 
-8. tests/ (*optional*): a folder storing testing scripts. 
+1. DESCRIPTION: this stores package metadata, including its name, version, authors, license, and required or suggested packages.
+2. NAMESPACE: a text file storing information pertaining to which functions you'd like to import from external packages, or export from your own package for users.
+3. R/: a folder that will store *all* source code for your package.
+4. man/: a folder storing all code documentation (refer to the section below entitled "Creating Documentation")
+
+Optionally, you can include these items:
+
+1. LICENSE: a text file storing your license information. 
+2. vignettes/ a folder storing R vignettes (i.e. tutorials). These are kind of like static jupyter notebooks that users can follow.
+3. data/: a folder that stores any **required** package data. 
+4. tests/: a folder storing testing scripts. 
 
 ### Instantiating an R package
 
-There are a couple of ways to create R packages. Of course you can do this manually, but we'll create a new package using Rstudio. 
+There are a couple of ways to begin an R package. Of course you can do this manually, but we'll create a new package using Rstudio. 
 
 Begin by creating a new projects from `File>New Project`: 
 <img src="images/create_project.png" alt="create_project" width="900">
@@ -51,11 +55,11 @@ Name the project and define where you'd like to put it.
 After doing this, you will now have a folder called `BaseballStats` in your working directory, with a folder for putting your code, `R`, a folder for putting any documentation, `man`, as well two files for storing important package metadata, DESCRIPTION and NAMESPACE.
 
 
-**Alternatives** You can also create R packages with  `devtools::create`, `devtools::pacakge.skeleton`, or with `usethis::create_pacakge`. 
+_**Alternatives**_ You can also create R packages with  `devtools::create`, `devtools::pacakge.skeleton`, or with `usethis::create_pacakge`. 
 
 ### Add your functions or R scripts to R
 
-The R directory will store all your R code. If you have code already you're trying to package up you can move this over to the R directory. Else, you can begin writing code. For example, we'll add a file called `statistics.R` and add a single function for now:
+The R directory will store all of your R code. If you have code already you're trying to package up you can move this over to the R directory. Else, you can begin writing code. For example, we'll add a file called `statistics.R` and add a single function for now:
 
 ```R
 compute_average <- function(num_hits, num_at_bats) {
@@ -112,7 +116,7 @@ For more advanced packages, you may want to develop from an object oriented (OO)
 
 R supports three different object oriented programming paradigms: S3, S4, and R5. Here we'll focus on S4 classes which are extremely flexible and similar to other object-oriented systems. 
 
-To begin, we'll creating a file for declaring all classes and what data can be stored in each instance. This will go in the `AllClasses.R` file. 
+To begin, we'll create a file for declaring all classes and what data can be stored in each instance. This will go in the `AllClasses.R` file. 
 
 ### Defining S4 Classes
 
@@ -126,8 +130,8 @@ setClassUnion('numericORNULL', members=c('numeric', 'NULL'))
 Player <- setClass("Player",
                    slots = c(
                      name = "character",
-                     num_at_bats = "numericORNULL",
-                     num_hits = "numericORNULL",
+                     num_at_bats = "numeric",
+                     num_hits = "numeric",
                      is_pitcher = 'logical',
                      era = 'numericORNULL'),
                    prototype = list(
@@ -135,14 +139,14 @@ Player <- setClass("Player",
                      num_at_bats = 0,
                      num_hits = 0,
                      is_pitcher = FALSE,
-                     era = 0.0
+                     era = NULL
                    ))
 
 Club <- setClass("Club",
                  slots = c(
                    name = 'character',
                    city = 'character',
-                   winning_percentage = 'numericORNULL',
+                   winning_percentage = 'numeric',
                    players = 'list'),
                  prototype = list(
                    name = character(),
@@ -153,6 +157,8 @@ Club <- setClass("Club",
                  ))
 ```
 ### Creating Class-Specific Functions 
+
+S4 objects need to be instantiatied using the `new` operator (e.g. `player = new('Player', ...`)). 
 
 To support classic object-oriented functionality, you might want to create class-specific functions, including a generator function akin to python's `__init__` function. 
 
@@ -167,7 +173,7 @@ For readability, you can create an `.R`. file for each class you have - for inst
 #' @param is_pitcher Boolean indicating whether or not the player pitches
 #' @param era The Earned Run Average (ERA) for a pitcher 
 #' @return Player object
-Player <- function(name = "", num_at_bats = NULL, num_hits = NULL,
+Player <- function(name = "", num_at_bats = 0.0, num_hits = 0.0,
         is_pitcher = FALSE, era = NULL) {
 
     .Object <- new('Player', name = name, num_at_bats = num_at_bats,
@@ -192,7 +198,11 @@ As for the `Club` class we'll add to a file called `methods-Club.R`:
 
 ```R
 Club <- function(name = "", city = "", winning_percentage = NULL,
-        players = list()) {
+        players = list(), num_wins = 0, num_games = 0) {
+
+    if (winning_percentage == NULL) {
+      winning_percentage = num_wins / num_games
+    }
 
     .Object <- new('Club', name = name, city = city,
                     winning_percentage = winning_percentage, players = players)
@@ -216,7 +226,7 @@ setMethod("compute_batting_average", signature(object = "Club"),
         })
 ```
 
-You may notice that both objects have a function called `compute_batting_average`. This takes advantage of R's multiple dispatching feature, meaning that it will look for the object's "signature" before calling the function. In order to take advantage of this, we'll need to create one more file in `R/` that will store these **generics** that support multiple dispatch: `AllGenerics.R`. We'll add a single generic for now to `AllGenerics.R`:
+You may notice that both objects have a function called `compute_batting_average`. This takes advantage of R's _multiple dispatch_ feature, meaning that it will look for the object's "signature" before calling the function. In order to take advantage of this, we'll need to create one more file in `R/` that will store these **generics** that support multiple dispatch: `AllGenerics.R`. We'll add a single generic for now to `AllGenerics.R`:
 
 ```R
 setGeneric("compute_batting_average", function(object, ...) {
@@ -259,8 +269,8 @@ use_test("player")
 ✔ Writing 'tests/testthat.R'
 ● Call `use_test()` to initialize a basic test file and open it for editing.
 ✔ Increasing 'testthat' version to '>= 2.1.0' in DESCRIPTION
-✔ Writing 'tests/testthat/test-player-test.R'
-● Modify 'tests/testthat/test-player-test.R'
+✔ Writing 'tests/testthat/player-test.R'
+● Modify 'tests/testthat/player-test.R'
 ```
 
 You'll now notice that a window pops up to edit the new test file that you've added. You can add the following test:
@@ -292,16 +302,16 @@ Type: Package
 Title: A package for computing statistics for baseball players
 Version: 1.0
 Date: 2019-10-14
-Authors@R: c(person("Matt", "Jones", email = "mattjones315@gmail.com", role = c("aut", "cre")))
+Author: Matt Jones
 Maintainer: Matt Jones <matts_email@email.com>
 Description: BaseballStats provides an interface for storing player & ball club information as well as computing statistics around these items.
 License: MIT
 RoxygenNote: 6.1.1
 Suggests:
-	knitr,
-	rmarkdown,
-    testthat,
+Suggests: 
+    testthat (>= 2.1.0)
     ggplot2
+    knitr
 ```
 
 For now, you can leave the NAMESPACE as is, exporting all functions. 
@@ -322,7 +332,7 @@ CRAN is the default package server for R, and requires a bit more information be
 
 You'll next want to use the command line function `R CMD check .` to run, document, and test your code base. 
 
-Now, to submit your package to CRAN you need to build the package using `devtools::build()` (which will create a package bundle) and then manually upload this to http://cran.r-project.org/submit.html. These submission are vetted by volunteers and Hadley Wickam has some great advice around the entire submssion process, namely with how to make these gatekeepers look favorably on your package: http://r-pkgs.had.co.nz/release.html.
+Now, to submit your package to CRAN you need to build the package using `devtools::build()` (which will create a package bundle) and then manually upload this to http://cran.r-project.org/submit.html. These submissions are vetted by volunteers and Hadley Wickam has some great advice around the entire submssion process, namely with how to make these gatekeepers look favorably upon your package: http://r-pkgs.had.co.nz/release.html.
 
 ### Publishing with Bioconductor 
 
@@ -353,10 +363,9 @@ For a complete style guide, refer to this [webpage](https://rmarkdown.rstudio.co
 ## Rcpp
 
 R is infamous for slow compute times and poor memory management, the confluence of which may preclude any serious data scientist from using vanilla R for analyses.  
+To circumvent this, you can leverage `Rcpp` which serves as an R wrapper for C++ code so that you can call actual C++ code from within R. You can get started with this from `usethis::use_rcpp()`. This will create a directory for your C++ code, `src/`, as well as add the required dependencies to your DESCRIPTION file.
 
-To circumvent this, you can leverage `Rcpp` which serves as an R wrapper for C++ code so that you can call actual C++ code from within R. You can get started with this from `usethis::use_rcpp()`. This will create a directory for your C++ code, `src/`, as well as add the requisite dependencies to your DESCRIPTION file.
-
-Also make sure that your NAMESPACE is correct - it should include these two lines:
+Before moving on, make sure that your NAMESPACE is correct - it should include these two lines:
 
 ```R
 useDynLib(BaseballStats)
@@ -373,10 +382,10 @@ After creating a package you're ready to share with the world, you may want to c
 pkgdown::build_site()
 ```
 
-This will automatically generate a new folder, `docs/` which will store your .html files as well as give you a preview of your new package website!
+`pkgdown` works similarly to Roxygen, in the sense it takes work you've already done and populates a website for you. Using the `build_site` function will automatically generate a new folder, `docs/` which will store your .html files as well as give you a preview of your new package website!
 
 ## Shiny apps
 
 Shiny apps are powerful interactive web applications that are written in R. While you can develop a custom web-based application with your own html, css, and javascript code, Shiny provides a convenient approach that will compile your R code into the requisite web-based code. 
 
-While creating a Shiny app falls out of the purview of this tutorial, refer to a great [tutorial](http://zevross.com/blog/2016/04/19/r-powered-web-applications-with-shiny-a-tutorial-and-cheat-sheet-with-40-example-apps/) by Zev Ross to get started on your first Shiny app.
+While creating a Shiny app falls out of the purview of this tutorial, refer to a great tutorial [here](http://zevross.com/blog/2016/04/19/r-powered-web-applications-with-shiny-a-tutorial-and-cheat-sheet-with-40-example-apps/) by Zev Ross to get started on your first Shiny app.
